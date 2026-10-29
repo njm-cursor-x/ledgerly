@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
+import { DisputeComments } from "@/components/disputes/comments";
 import { SuggestedCredit } from "@/components/disputes/suggested-credit";
 import { DisputeStatusBadge, InvoiceStatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -113,6 +114,8 @@ export default async function DisputeDetailPage({ params }: { params: Promise<{ 
           </p>
         </CardContent>
       </Card>
+
+      <DisputeComments key={dispute.id} disputeId={dispute.id} />
     </div>
   );
 }

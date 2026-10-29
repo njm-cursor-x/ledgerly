@@ -120,6 +120,65 @@ export async function getDispute(id: string) {
   });
 }
 
+export const DISPUTE_COMMENT_PAGE_SIZE = 10;
+export const DISPUTE_COMMENT_AUTHOR = "Avery Quinn";
+
+export async function listDisputeComments(disputeId: string, page: number) {
+  const dispute = await prisma.dispute.findUnique({
+    where: { id: disputeId },
+    select: { id: true },
+  });
+  if (!dispute) return null;
+
+  const where = { disputeId };
+  const [total, data] = await Promise.all([
+    prisma.disputeComment.count({ where }),
+    prisma.disputeComment.findMany({
+      where,
+      orderBy: { createdAt: "asc" },
+      skip: (page - 1) * DISPUTE_COMMENT_PAGE_SIZE,
+      take: DISPUTE_COMMENT_PAGE_SIZE,
+    }),
+  ]);
+
+  return {
+    data,
+    meta: {
+      page,
+      total,
+      totalPages: Math.ceil(total / DISPUTE_COMMENT_PAGE_SIZE),
+    },
+  };
+}
+
+export async function createDisputeComment(disputeId: string, body: string) {
+  const dispute = await prisma.dispute.findUnique({
+    where: { id: disputeId },
+    select: { id: true },
+  });
+  if (!dispute) return null;
+
+  return prisma.disputeComment.create({
+    data: {
+      id: `cmt_${crypto.randomUUID()}`,
+      disputeId,
+      authorName: DISPUTE_COMMENT_AUTHOR,
+      body,
+      createdAt: new Date(),
+    },
+  });
+}
+
+export async function deleteDisputeComment(disputeId: string, commentId: string) {
+  const comment = await prisma.disputeComment.findFirst({
+    where: { id: commentId, disputeId },
+  });
+  if (!comment) return null;
+
+  await prisma.disputeComment.delete({ where: { id: comment.id } });
+  return comment;
+}
+
 export async function getOpenDisputeCount() {
   return prisma.dispute.count({
     where: { status: { in: ["OPEN", "NEEDS_REVIEW"] satisfies DisputeStatus[] } },

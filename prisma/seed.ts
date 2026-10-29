@@ -332,11 +332,29 @@ const DISPUTES = [
   },
 ];
 
+const DISPUTE_COMMENTS = [
+  {
+    id: "cmt_1043_ellis",
+    disputeId: "dsp_1043",
+    authorName: "Ellis Marlow",
+    body: "The signed order is Growth. This invoice was issued on Scale. Please review the mismatch before we pay.",
+    createdAt: "2026-08-12",
+  },
+  {
+    id: "cmt_1043_avery",
+    disputeId: "dsp_1043",
+    authorName: "Avery Quinn",
+    body: "Opened for review. The claim is larger than this invoice, so any credit stays inside the catalog price.",
+    createdAt: "2026-08-13",
+  },
+];
+
 async function main() {
   execSync("npx prisma db push --skip-generate --accept-data-loss", {
     stdio: "inherit",
   });
 
+  await prisma.disputeComment.deleteMany();
   await prisma.dispute.deleteMany();
   await prisma.invoiceLine.deleteMany();
   await prisma.invoice.deleteMany();
@@ -414,6 +432,18 @@ async function main() {
           planPriceCents: planPriceCents(invoice.plan),
         }),
         reviewerNote: dispute.reviewerNote ?? null,
+      },
+    });
+  }
+
+  for (const comment of DISPUTE_COMMENTS) {
+    await prisma.disputeComment.create({
+      data: {
+        id: comment.id,
+        disputeId: comment.disputeId,
+        authorName: comment.authorName,
+        body: comment.body,
+        createdAt: demoDay(comment.createdAt),
       },
     });
   }

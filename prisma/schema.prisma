@@ -72,4 +72,14 @@ model Dispute {
   disputedAmountCents  Int
   suggestedCreditCents Int
   reviewerNote         String?
+  comments             DisputeComment[]
+}
+
+model DisputeComment {
+  id         String   @id
+  disputeId  String
+  dispute    Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  authorName String
+  body       String
+  createdAt  DateTime
 }
